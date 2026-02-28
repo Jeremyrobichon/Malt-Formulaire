@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brief Projet</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0e;
+    --surface: #131316;
+    --surface2: #1c1c21;
+    --border: #2a2a32;
+    --accent: #a78bfa;
+    --accent2: #ff6b35;
+    --text: #f0f0f2;
+    --muted: #6b6b78;
+    --muted2: #9999a8;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(167,139,250,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 10% 80%, rgba(255,107,53,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+    z-index: 100;
+    box-shadow: 0 0 12px rgba(167,139,250,0.5);
+  }
+
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 50;
+    background: linear-gradient(to bottom, rgba(12,12,14,0.95), transparent);
+  }
+
+  .step-counter {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .step {
+    display: none;
+    min-height: 100vh;
+    padding: 120px 40px 80px;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
+    animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+  }
+  .step.active { display: flex; flex-direction: column; justify-content: center; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .question {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .sub {
+    font-size: 15px;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 36px;
+    font-style: italic;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="url"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 12px;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(167,139,250,0.1);
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 120px; }
+  select { appearance: none; cursor: pointer; }
+  select option { background: #1c1c21; }
+
+  .choices {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .choices.grid2 { grid-template-columns: 1fr 1fr; }
+
+  .choice {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    user-select: none;
+  }
+  .choice:hover {
+    border-color: rgba(167,139,250,0.4);
+    background: var(--surface2);
+  }
+  .choice.selected {
+    border-color: var(--accent);
+    background: rgba(167,139,250,0.07);
+  }
+  .choice .icon {
+    font-size: 20px;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .choice .label {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .choice .desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .choice.selected .label { color: var(--accent); }
+
+  .budget-display {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .budget-display span { font-size: 20px; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 8px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(167,139,250,0.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    margin-bottom: 24px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted2);
+  }
+  .tag:hover { border-color: var(--accent); color: var(--text); }
+  .tag.selected { background: rgba(167,139,250,0.1); border-color: var(--accent); color: var(--accent); }
+
+  .info-box {
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--muted2);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .info-box strong { color: #ff6b35; }
+
+  .btn-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .btn-next {
+    background: var(--accent);
+    color: #0c0c0e;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-next:hover { 
+    background: #c4b5fd;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(167,139,250,0.3);
+  }
+  .btn-next:active { transform: translateY(0); }
+
+  .btn-back {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-back:hover { color: var(--text); }
+
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .hint kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    color: var(--muted2);
+  }
+
+  .error-msg {
+    font-size: 13px;
+    color: #ff6b35;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .welcome-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 100px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 24px 0;
+  }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(167,139,250,0.1);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 16px 20px; }
+    .step { padding: 100px 20px 60px; }
+    .choices.grid2 { grid-template-columns: 1fr; }
+    .budget-display { font-size: 32px; }
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 500px) { .input-row { grid-template-columns: 1fr; } }
+
+  .input-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar" style="width: 0%"></div>
+
+<header>
+  <div class="step-counter" id="stepCounter">Étape 1 / 7</div>
+</header>
+
+<div class="wrapper">
+
+  <!-- STEP 0 — Welcome -->
+  <div class="step active" id="step-0">
+    <div class="welcome-badge">✦ Brief projet asynchrone</div>
+    <div class="question">Avant de commencer,<br>parlons de toi.</div>
+    <div class="divider"></div>
+    <p style="font-size:16px; color:var(--muted2); line-height:1.7; margin-bottom:32px;">
+      Ce formulaire remplace un appel découverte. Il me permet de comprendre ton projet en profondeur avant de te revenir avec une proposition concrète.<br><br>
+      Compte <strong style="color:var(--text)">~5 minutes</strong> pour le remplir sérieusement.
+    </p>
+    <div class="input-label">Ton prénom & nom</div>
+    <input type="text" id="nom" placeholder="ex. Marie Dupont" />
+    <div class="input-label" style="margin-top:8px;">Ton email professionnel</div>
+    <input type="email" id="email" placeholder="marie@monbusiness.fr" />
+    <div class="error-msg" id="err-0">Merci de remplir ces deux champs.</div>
+    <div class="btn-row">
+      <button class="btn-next" onclick="nextStep(0)">Commencer →</button>
+      <span class="hint">ou appuie sur <kbd>Entrée</kbd></span>
+    </div>
+  </div>
+
+  <!-- STEP 1 — Type de projet -->
+  <div class="step" id="step-1">
+    <div class="step-label">01 — Type de mission</div>
+    <div class="question">Quel est le cœur<br>de ta demande ?</div>
+    <div class="sub">Plusieurs choix possibles si ton projet combine plusieurs besoins.</div>
+    <div class="choices" id="projectTypes">
+      <div class="choice" data-val="funnel" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">🔁</div>
+        <div>
+          <div class="label">Tunnel de vente (Systeme.io)</div>
+          <div class="desc">Page de capture, checkout, upsell, email séquences</div>
+        </div>
+      </div>
+      <div class="choice" data-val="pinterest" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">📌</div>
+        <div>
+          <div class="label">Stratégie & Publicité Pinterest Ads</div>
+          <div class="desc">Créa visuelle, ciblage, tracking, optimisation</div>
+        </div>
+      </div>
+      <div class="choice" data-val="automation" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">⚙️</div>
+        <div>
+          <div class="label">Automatisation & Workflows (n8n / Make)</div>
+          <div class="desc">Connexion d'outils, nettoyage data, process automatisé</div>
+        </div>
+      </div>
+      <div class="choice" data-val="ia_agent" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">🤖</div>
+        <div>
+          <div class="label">Agent IA personnalisé</div>
+          <div class="desc">SAV, reporting, alertes, processus piloté par IA</div>
+        </div>
+      </div>
+      <div class="choice" data-val="copywriting" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">✍️</div>
+        <div>
+          <div class="label">Copywriting & Email Marketing</div>
+          <div class="desc">Séquences de lancement, emails de vente, landing page</div>
+        </div>
+      </div>
+      <div class="choice" data-val="audit" onclick="toggleChoice(this, 'projectTypes')">
+        <div class="icon">🔍</div>
+        <div>
+          <div class="label">Audit & Conseil</div>
+          <div class="desc">Diagnostic funnel, analytics, stratégie tunnel/trafic</div>
+        </div>
+      </div>
+    </div>
+    <div class="error-msg" id="err-1">Sélectionne au moins une option.</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevStep(1)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(1)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 — Situation actuelle -->
+  <div class="step" id="step-2">
+    <div class="step-label">02 — Contexte</div>
+    <div class="question">Décris-moi ta situation actuelle.</div>
+    <div class="sub">Où tu en es aujourd'hui, ce qui bloque, ce que tu as déjà essayé.</div>
+    <textarea id="situation" placeholder="Ex : J'ai un tunnel Systeme.io actif mais mon taux de conversion est à 0,8%. J'envoie du trafic Pinterest dessus depuis 2 mois mais les leads ne convertissent pas en acheteurs. J'ai déjà testé 3 visuels différents sans résultat..."></textarea>
+
+    <div class="input-label">Ton activité / secteur</div>
+    <input type="text" id="secteur" placeholder="ex. Coach business, e-commerce bijoux, formation en ligne..." />
+
+    <div class="error-msg" id="err-2">Merci de décrire ta situation (min. 30 caractères).</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevStep(2)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(2)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 — Objectif -->
+  <div class="step" id="step-3">
+    <div class="step-label">03 — Objectif</div>
+    <div class="question">Quel est le résultat<br>concret que tu veux ?</div>
+    <div class="sub">Sois précis. Un objectif chiffré est 10x plus facile à atteindre qu'un vague "plus de ventes".</div>
+    <textarea id="objectif" placeholder="Ex : Atteindre 30 leads qualifiés / mois avec un CPL < 5€ sur Pinterest, et convertir 15% de ces leads via ma séquence email d'ici 90 jours."></textarea>
+
+    <div class="input-label" style="margin-top:4px;">Délai souhaité pour démarrer</div>
+    <div class="choices grid2" id="delaiGroup">
+      <div class="choice" data-val="asap" onclick="toggleChoice(this, 'delaiGroup', true)">
+        <div class="icon">⚡</div>
+        <div class="label">Dès que possible</div>
+      </div>
+      <div class="choice" data-val="2sem" onclick="toggleChoice(this, 'delaiGroup', true)">
+        <div class="icon">📅</div>
+        <div class="label">Dans 1-2 semaines</div>
+      </div>
+      <div class="choice" data-val="1mois" onclick="toggleChoice(this, 'delaiGroup', true)">
+        <div class="icon">🗓️</div>
+        <div class="label">Dans 1 mois</div>
+      </div>
+      <div class="choice" data-val="flexible" onclick="toggleChoice(this, 'delaiGroup', true)">
+        <div class="icon">🌊</div>
+        <div class="label">Je suis flexible</div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="err-3">Décris ton objectif et sélectionne un délai.</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevStep(3)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(3)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 — Budget -->
+  <div class="step" id="step-4">
+    <div class="step-label">04 — Budget</div>
+    <div class="question">Quelle enveloppe as-tu<br>pour ce projet ?</div>
+    <div class="sub">Je travaille avec des budgets sérieux pour des résultats sérieux. Cette info me permet de calibrer la proposition.</div>
+
+    <div class="budget-display" id="budgetDisplay">
+      500 <span>€</span>
+    </div>
+    <input type="range" id="budgetSlider" min="200" max="5000" step="100" value="500" oninput="updateBudget(this.value)" />
+    <div class="range-labels">
+      <span>200€</span>
+      <span>1 000€</span>
+      <span>2 500€</span>
+      <span>5 000€+</span>
+    </div>
+
+    <div class="info-box" id="budgetNote">
+      💡 Pour une prestation sérieuse, un budget minimum de <strong>500€</strong> est requis. En dessous, je ne peux pas garantir la qualité attendue.
+    </div>
+
+    <div class="error-msg" id="err-4"></div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevStep(4)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(4)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5 — Outils & Accès -->
+  <div class="step" id="step-5">
+    <div class="step-label">05 — Stack technique</div>
+    <div class="question">Quels outils utilises-tu<br>déjà ?</div>
+    <div class="sub">Coche tout ce qui s'applique — ça m'évite de te poser la question plus tard.</div>
+    <div class="tags" id="toolTags">
+      <div class="tag" onclick="toggleTag(this)">Systeme.io</div>
+      <div class="tag" onclick="toggleTag(this)">ClickFunnels</div>
+      <div class="tag" onclick="toggleTag(this)">WordPress</div>
+      <div class="tag" onclick="toggleTag(this)">Shopify</div>
+      <div class="tag" onclick="toggleTag(this)">n8n</div>
+      <div class="tag" onclick="toggleTag(this)">Make / Integromat</div>
+      <div class="tag" onclick="toggleTag(this)">Zapier</div>
+      <div class="tag" onclick="toggleTag(this)">ActiveCampaign</div>
+      <div class="tag" onclick="toggleTag(this)">Mailchimp</div>
+      <div class="tag" onclick="toggleTag(this)">Brevo</div>
+      <div class="tag" onclick="toggleTag(this)">Google Analytics</div>
+      <div class="tag" onclick="toggleTag(this)">Pinterest Ads</div>
+      <div class="tag" onclick="toggleTag(this)">Meta Ads</div>
+      <div class="tag" onclick="toggleTag(this)">Google Ads</div>
+      <div class="tag" onclick="toggleTag(this)">Notion</div>
+      <div class="tag" onclick="toggleTag(this)">Airtable</div>
+      <div class="tag" onclick="toggleTag(this)">Google Sheets</div>
+    </div>
+
+    <div class="input-label" style="margin-top: 16px;">Un outil non listé ?</div>
+    <input type="text" id="autreOutil" placeholder="ex. HubSpot, Webflow, Kajabi..." />
+
+    <div class="btn-row" style="margin-top: 16px;">
+      <button class="btn-back" onclick="prevStep(5)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(5)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- STEP 6 — Précisions & Lien -->
+  <div class="step" id="step-6">
+    <div class="step-label">06 — Derniers détails</div>
+    <div class="question">Pour finir,<br>quelques précisions.</div>
+
+    <div class="input-label">Lien vers ton site / funnel existant (si applicable)</div>
+    <input type="url" id="lienSite" placeholder="https://..." />
+
+    <div class="input-label" style="margin-top:8px;">Avez-vous déjà travaillé avec un freelance sur ce sujet ?</div>
+    <div class="choices grid2" id="expGroup" style="margin-bottom:16px;">
+      <div class="choice" data-val="oui" onclick="toggleChoice(this, 'expGroup', true)">
+        <div class="icon">✅</div>
+        <div class="label">Oui</div>
+      </div>
+      <div class="choice" data-val="non" onclick="toggleChoice(this, 'expGroup', true)">
+        <div class="icon">🆕</div>
+        <div class="label">Non, première fois</div>
+      </div>
+    </div>
+
+    <div class="input-label">Quelque chose d'important que je dois savoir ?</div>
+    <textarea id="extra" placeholder="Contraintes spécifiques, contexte particulier, deadline critique, ressources disponibles de ton côté..." style="min-height:90px;"></textarea>
+
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-back" onclick="prevStep(6)">← Retour</button>
+      <button class="btn-next" onclick="nextStep(6)">Étape suivante →</button>
+    </div>
+  </div>
+
+  <!-- STEP 7 — Validation Async -->
+  <div class="step" id="step-7">
+    <div class="step-label">07 — Mode de collaboration</div>
+    <div class="question">Une dernière chose<br>importante.</div>
+    <div class="sub">Lis attentivement avant d'envoyer ton brief.</div>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px; margin-bottom: 28px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+        <div style="width:44px; height:44px; background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">⚡</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif; font-size:17px; font-weight:700; color:var(--text);">100% Asynchrone</div>
+          <div style="font-size:13px; color:var(--muted); margin-top:2px;">Mon infrastructure de travail</div>
+        </div>
+      </div>
+      <p style="font-size:15px; color:var(--muted2); line-height:1.8; margin-bottom:20px;">
+        Pour garantir une exécution ultra-rapide et un tarif compétitif, je travaille <strong style="color:var(--text)">exclusivement via Notion</strong>. Chaque mission dispose d'un espace dédié où tout est tracé, documenté et livré.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px; border-top:1px solid var(--border); padding-top:20px;">
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted2);">
+          <span style="color:var(--accent); font-size:16px;">✓</span> Zéro réunion vidéo — aucun appel prévu
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted2);">
+          <span style="color:var(--accent); font-size:16px;">✓</span> Communication écrite, traçable, consultable à tout moment
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted2);">
+          <span style="color:var(--accent); font-size:16px;">✓</span> Réponse sous 48h ouvrées, avancement visible en temps réel
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px; color:var(--muted2);">
+          <span style="color:var(--accent); font-size:16px;">✓</span> Livraison rapide grâce à un process rodé sans interruptions
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:15px; font-weight:500; color:var(--text); margin-bottom:14px;">
+      Ce mode de fonctionnement vous convient-il ?
+    </div>
+
+    <div class="choices" id="asyncGroup">
+      <div class="choice" data-val="oui" onclick="toggleChoice(this, 'asyncGroup', true)">
+        <div class="icon">✅</div>
+        <div>
+          <div class="label">Oui, je privilégie l'efficacité et la trace écrite.</div>
+          <div class="desc">Je comprends qu'il n'y aura pas de visio ni d'appel.</div>
+        </div>
+      </div>
+      <div class="choice" data-val="non" onclick="toggleChoice(this, 'asyncGroup', true)">
+        <div class="icon">❌</div>
+        <div>
+          <div class="label">Non, j'ai besoin de rendez-vous réguliers.</div>
+          <div class="desc">Je préfère un suivi avec des appels ou réunions vidéo.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="err-7">Merci de sélectionner une option.</div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="prevStep(7)">← Retour</button>
+      <button class="btn-next" onclick="handleAsyncChoice()">Envoyer le brief ✦</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS — OUI -->
+  <div class="step" id="step-success-oui">
+    <div class="success-icon">✓</div>
+    <div class="step-label">Brief reçu</div>
+    <div class="question">Votre espace Notion<br>est en cours de création.</div>
+    <div class="divider"></div>
+    <p style="font-size:16px; color:var(--muted2); line-height:1.8; margin-bottom:28px;">
+      Vous recevrez le <strong style="color:var(--text)">lien de votre espace de suivi</strong> et votre <strong style="color:var(--text)">devis sur Malt</strong> d'ici quelques heures.<br><br>
+      <em>Pas de call. Pas de blabla. Juste une collaboration efficace.</em>
+    </p>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; font-size:14px; color:var(--muted2); line-height:1.7;" id="recapBox"></div>
+    <div style="margin-top:24px; background:rgba(167,139,250,0.06); border:1px solid rgba(167,139,250,0.2); border-radius:12px; padding:18px 20px;">
+      <div style="font-size:13px; color:var(--muted2); line-height:1.7;">
+        <strong style="color:var(--accent)">Et maintenant ?</strong><br>
+        1. Je reviens vers vous sous 48h ouvrées avec votre devis Malt<br>
+        2. Dès validation + acompte → votre espace Notion est partagé<br>
+        3. On démarre immédiatement, tout se passe dans Notion
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn-back" onclick="goToStep(7)">← Retour</button>
+    </div>
+  </div>
+
+  <!-- SUCCESS — NON -->
+  <div class="step" id="step-success-non">
+    <div style="width:72px; height:72px; background:rgba(255,107,53,0.1); border:2px solid rgba(255,107,53,0.4); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:32px;">✕</div>
+    <div class="step-label" style="color: var(--accent2);">Pas de match</div>
+    <div class="question">Mon profil ne correspond<br>pas à votre besoin.</div>
+    <div class="divider"></div>
+    <p style="font-size:16px; color:var(--muted2); line-height:1.8; margin-bottom:28px;">
+      Mon infrastructure est entièrement optimisée pour le travail asynchrone — c'est ce qui me permet de garantir mes <strong style="color:var(--text)">délais serrés</strong> et mes <strong style="color:var(--text)">tarifs compétitifs</strong>.<br><br>
+      Si vous avez besoin d'un accompagnement avec des réunions régulières ou des appels de suivi, je ne suis malheureusement pas le bon profil pour vous.
+    </p>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 24px; font-size:15px; color:var(--muted2); line-height:1.7;">
+      Bonne continuation dans votre recherche — et si votre situation évolue vers un mode async, n'hésitez pas à revenir. 👋
+    </div>
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn-back" onclick="goToStep(7)">← Retour</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentStep = 0;
+const totalSteps = 8;
+
+function updateProgress(step) {
+  const pct = (typeof step === 'number') ? (step / (totalSteps - 1)) * 100 : 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+  if (typeof step === 'number' && step < totalSteps - 1) {
+    document.getElementById('stepCounter').textContent = `Étape ${step + 1} / ${totalSteps - 1}`;
+  } else {
+    document.getElementById('stepCounter').textContent = '✦ Brief envoyé';
+  }
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  let target;
+  if (n === 'success-oui') target = document.getElementById('step-success-oui');
+  else if (n === 'success-non') target = document.getElementById('step-success-non');
+  else target = document.getElementById('step-' + n);
+  if (target) {
+    target.classList.add('active');
+    target.style.animation = 'none';
+    requestAnimationFrame(() => { target.style.animation = ''; });
+  }
+}
+
+function goToStep(n) {
+  currentStep = n;
+  showStep(n);
+  updateProgress(n);
+  window.scrollTo(0, 0);
+}
+
+function toggleChoice(el, groupId, single = false) {
+  if (single) {
+    document.querySelectorAll(`#${groupId} .choice`).forEach(c => c.classList.remove('selected'));
+  }
+  el.classList.toggle('selected');
+}
+
+function toggleTag(el) {
+  el.classList.toggle('selected');
+}
+
+function updateBudget(val) {
+  val = parseInt(val);
+  let display = val >= 5000 ? '5 000+' : val.toLocaleString('fr-FR');
+  document.getElementById('budgetDisplay').innerHTML = `${display} <span>€</span>`;
+  const note = document.getElementById('budgetNote');
+  if (val < 500) {
+    note.innerHTML = '⚠️ Budget en dessous de mon minimum. Je travaille à partir de <strong>500€</strong> pour garantir un rendu professionnel.';
+    note.style.borderColor = 'rgba(255,107,53,0.5)';
+  } else if (val >= 2000) {
+    note.innerHTML = '✦ Super, avec cette enveloppe on peut construire quelque chose de solide et complet.';
+    note.style.borderColor = 'rgba(167,139,250,0.3)';
+    note.style.background = 'rgba(167,139,250,0.05)';
+    note.style.color = 'var(--muted2)';
+  } else {
+    note.innerHTML = '💡 Budget correct pour un projet ciblé et bien défini.';
+    note.style.borderColor = 'rgba(255,107,53,0.25)';
+    note.style.background = 'rgba(255,107,53,0.08)';
+  }
+}
+
+function nextStep(step) {
+  let valid = true;
+
+  if (step === 0) {
+    const nom = document.getElementById('nom').value.trim();
+    const email = document.getElementById('email').value.trim();
+    valid = nom.length > 1 && email.includes('@');
+    document.getElementById('err-0').style.display = valid ? 'none' : 'block';
+  }
+  else if (step === 1) {
+    const sel = document.querySelectorAll('#projectTypes .choice.selected');
+    valid = sel.length > 0;
+    document.getElementById('err-1').style.display = valid ? 'none' : 'block';
+  }
+  else if (step === 2) {
+    const sit = document.getElementById('situation').value.trim();
+    valid = sit.length >= 30;
+    document.getElementById('err-2').style.display = valid ? 'none' : 'block';
+  }
+  else if (step === 3) {
+    const obj = document.getElementById('objectif').value.trim();
+    const del = document.querySelectorAll('#delaiGroup .choice.selected');
+    valid = obj.length >= 10 && del.length > 0;
+    document.getElementById('err-3').style.display = valid ? 'none' : 'block';
+  }
+  else if (step === 4) {
+    const budget = parseInt(document.getElementById('budgetSlider').value);
+    valid = budget >= 200;
+    document.getElementById('err-4').style.display = valid ? 'none' : 'block';
+  }
+  else if (step === 6) {
+    valid = true;
+  }
+
+  if (!valid) return;
+
+  currentStep = step + 1;
+  showStep(currentStep);
+  updateProgress(currentStep);
+  window.scrollTo(0, 0);
+}
+
+function handleAsyncChoice() {
+  const sel = document.querySelectorAll('#asyncGroup .choice.selected');
+  if (sel.length === 0) {
+    document.getElementById('err-7').style.display = 'block';
+    return;
+  }
+  document.getElementById('err-7').style.display = 'none';
+  const choice = sel[0].dataset.val;
+  if (choice === 'oui') {
+    submitForm();
+  } else {
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('stepCounter').textContent = '✦ Brief envoyé';
+    showStep('success-non');
+    window.scrollTo(0, 0);
+  }
+}
+
+function prevStep(step) {
+  currentStep = step - 1;
+  showStep(currentStep);
+  updateProgress(currentStep);
+  window.scrollTo(0, 0);
+}
+
+async function submitForm(mode = 'oui') {
+  const nom        = document.getElementById('nom').value.trim();
+  const email      = document.getElementById('email').value.trim();
+  const situation  = document.getElementById('situation').value.trim();
+  const secteur    = document.getElementById('secteur').value.trim();
+  const objectif   = document.getElementById('objectif').value.trim();
+  const budget     = document.getElementById('budgetSlider').value;
+  const lienSite   = document.getElementById('lienSite').value.trim();
+  const extra      = document.getElementById('extra').value.trim();
+  const autreOutil = document.getElementById('autreOutil').value.trim();
+
+  const types  = [...document.querySelectorAll('#projectTypes .choice.selected')].map(c => c.querySelector('.label').textContent).join(', ');
+  const delai  = [...document.querySelectorAll('#delaiGroup .choice.selected')].map(c => c.querySelector('.label').textContent).join('');
+  const outils = [...document.querySelectorAll('#toolTags .tag.selected')].map(t => t.textContent).join(', ');
+  const exp    = [...document.querySelectorAll('#expGroup .choice.selected')].map(c => c.querySelector('.label').textContent).join('');
+
+  const btnNext = document.querySelector('#step-7 .btn-next');
+  btnNext.textContent = 'Envoi en cours...';
+  btnNext.disabled = true;
+
+  const payload = {
+    _subject: `🚀 Nouveau brief — ${nom} | ${types}`,
+    Nom: nom,
+    Email: email,
+    "Type de mission": types,
+    "Situation actuelle": situation,
+    Secteur: secteur,
+    Objectif: objectif,
+    "Délai souhaité": delai,
+    "Budget (€)": parseInt(budget).toLocaleString('fr-FR') + ' €',
+    "Outils utilisés": outils + (autreOutil ? `, ${autreOutil}` : ''),
+    "Expérience freelance": exp,
+    "Lien site / funnel": lienSite || '—',
+    "Infos complémentaires": extra || '—'
+  };
+
+  try {
+    const res = await fetch('https://formspree.io/f/xgolqzlj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      showStep('success-oui');
+      document.getElementById('progressBar').style.width = '100%';
+      document.getElementById('stepCounter').textContent = '✦ Brief envoyé';
+
+      document.getElementById('recapBox').innerHTML = `
+        <div style="margin-bottom:8px;"><strong style="color:var(--accent)">Contact</strong>&nbsp;&nbsp;${nom} — ${email}</div>
+        <div style="margin-bottom:8px;"><strong style="color:var(--accent)">Mission</strong>&nbsp;&nbsp;${types || '—'}</div>
+        <div style="margin-bottom:8px;"><strong style="color:var(--accent)">Budget</strong>&nbsp;&nbsp;${parseInt(budget).toLocaleString('fr-FR')} €</div>
+        <div><strong style="color:var(--accent)">Secteur</strong>&nbsp;&nbsp;${secteur || '—'}</div>
+      `;
+      window.scrollTo(0, 0);
+    } else {
+      throw new Error('Erreur serveur');
+    }
+  } catch (err) {
+    btnNext.textContent = 'Envoyer le brief ✦';
+    btnNext.disabled = false;
+    const errEl = document.createElement('p');
+    errEl.style.cssText = 'color:#ff6b35;font-size:13px;margin-top:12px;';
+    errEl.textContent = '❌ Erreur lors de l\'envoi. Vérifie ta connexion et réessaie.';
+    btnNext.parentElement.appendChild(errEl);
+    setTimeout(() => errEl.remove(), 5000);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+    const stepEl = document.querySelector('.step.active');
+    if (stepEl && stepEl.id.startsWith('step-')) {
+      const n = parseInt(stepEl.id.replace('step-', ''));
+      if (!isNaN(n) && n < 7) nextStep(n);
+    }
+  }
+});
+
+updateProgress(0);
+</script>
+</body>
+</html>
